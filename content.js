@@ -1,0 +1,1 @@
+console.log("Clipkit content script loaded");
