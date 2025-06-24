@@ -1,13 +1,174 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Clipkit</title>
-</head>
-<body>
-  <h1>Save to Clipkit</h1>
-  <input type="text" placeholder="Theme" id="theme" />
-  <textarea placeholder="Note" id="note"></textarea>
-  <button id="saveBtn">Save</button>
-  <script src="popup.js"></script>
-</body>
+  <head>
+    <title>Clipkit</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f9f9fb;
+        margin: 0;
+        padding: 20px 18px 18px 18px;
+        min-width: 320px;
+        min-height: 320px;
+      }
+      h1 {
+        font-size: 1.2rem;
+        margin-bottom: 16px;
+        color: #222;
+      }
+      label {
+        font-size: 0.95rem;
+        color: #444;
+        margin-bottom: 4px;
+        display: block;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 14px;
+        padding: 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 5px;
+        font-size: 1rem;
+        background: #fff;
+        transition: border 0.2s;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        border: 1.5px solid #6366f1;
+        outline: none;
+      }
+      textarea {
+        min-height: 60px;
+        resize: vertical;
+      }
+      #saveBtn {
+        width: 100%;
+        background: linear-gradient(90deg, #6366f1 60%, #60a5fa 100%);
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 0;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      #saveBtn:disabled {
+        background: #a5b4fc;
+        cursor: not-allowed;
+      }
+      #loading {
+        display: none;
+        text-align: center;
+        color: #6366f1;
+        margin-bottom: 10px;
+        font-size: 0.98rem;
+      }
+      .flex-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .tag {
+        background: #e0e7ff;
+        color: #3730a3;
+        border-radius: 3px;
+        padding: 2px 8px;
+        font-size: 0.92rem;
+        display: flex;
+        align-items: center;
+      }
+      .tag-remove {
+        margin-left: 4px;
+        cursor: pointer;
+        color: #6366f1;
+        font-weight: bold;
+      }
+      #recentItems {
+        margin-top: 18px;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 5px;
+        padding: 10px;
+        max-height: 120px;
+        overflow-y: auto;
+      }
+      #recentItems h2 {
+        font-size: 1rem;
+        margin: 0 0 8px 0;
+        color: #222;
+      }
+      #recentItems ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      #recentItems li {
+        font-size: 0.97rem;
+        margin-bottom: 6px;
+        color: #444;
+      }
+      .add-btn {
+        background: #6366f1;
+        color: #fff;
+        border: none;
+        border-radius: 3px;
+        padding: 2px 8px;
+        font-size: 0.92rem;
+        cursor: pointer;
+        margin-left: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Save to Clipkit</h1>
+    <form id="clipForm" autocomplete="off">
+      <label for="themeSelect">Project / Theme</label>
+      <div class="flex-row">
+        <select
+          id="themeSelect"
+          aria-label="Theme or Project"
+          required
+        ></select>
+        <button type="button" id="addThemeBtn" class="add-btn">+ New</button>
+      </div>
+      <label for="tagInput">Tags</label>
+      <input
+        type="text"
+        id="tagInput"
+        placeholder="Add tags..."
+        autocomplete="off"
+      />
+      <div class="tag-list" id="tagList"></div>
+      <label for="contentType">Content Type</label>
+      <select id="contentType" aria-label="Content Type" required>
+        <option value="text">Text</option>
+        <option value="url">URL</option>
+        <option value="image">Image</option>
+        <option value="video">Video</option>
+        <option value="other">Other</option>
+      </select>
+      <div id="contentInputWrapper"></div>
+      <div id="preview" style="display: none"></div>
+      <div id="loading">Saving...</div>
+      <button id="saveBtn" type="submit">Save</button>
+    </form>
+    <div id="recentItems" style="display: none">
+      <h2>Recently Saved</h2>
+      <ul id="recentItemsList"></ul>
+    </div>
+    <script src="popup.js"></script>
+  </body>
 </html>
