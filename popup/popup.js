@@ -1,6 +1,5 @@
 // --- DOM Elements ---
-const themeSelect = document.getElementById("themeSelect");
-const addThemeBtn = document.getElementById("addThemeBtn");
+// Removed themeSelect and addThemeBtn as they are no longer in the UI
 const tagInput = document.getElementById("tagInput");
 const tagList = document.getElementById("tagList");
 const saveBtn = document.getElementById("saveBtn");
@@ -11,18 +10,22 @@ const contentInputWrapper = document.getElementById("contentInputWrapper");
 const previewDiv = document.getElementById("preview");
 const recentItemsDiv = document.getElementById("recentItems");
 const recentItemsList = document.getElementById("recentItemsList");
+const ideaNameInput = document.getElementById("ideaName");
+const ideaCategoryInput = document.getElementById("ideaCategory");
+const clipStatusSelect = document.getElementById("clipStatus");
+const ideaSelect = document.getElementById("ideaSelect");
+const addIdeaBtn = document.getElementById("addIdeaBtn");
 
 let contentData = null;
 let selectedTags = [];
 let allTags = [];
-let allThemes = [];
+let allIdeas = [];
 
 const API_BASE = "http://localhost:8000";
 
 // --- Persist/Restore State ---
 function saveState() {
   chrome.storage.local.set({
-    clipkit_theme: themeSelect.value,
     clipkit_tags: selectedTags,
     clipkit_contentType: contentTypeSelect.value,
     clipkit_content: document.getElementById("contentInput")?.value || "",
@@ -30,15 +33,16 @@ function saveState() {
 }
 function restoreState() {
   chrome.storage.local.get(
-    ["clipkit_theme", "clipkit_tags", "clipkit_contentType", "clipkit_content"],
+    ["clipkit_tags", "clipkit_contentType", "clipkit_content"],
     (data) => {
-      if (data.clipkit_theme) themeSelect.value = data.clipkit_theme;
       if (data.clipkit_tags) {
         selectedTags = data.clipkit_tags;
         renderTagList();
       }
       if (data.clipkit_contentType) {
         contentTypeSelect.value = data.clipkit_contentType;
+        renderContentInput(contentTypeSelect.value);
+      } else {
         renderContentInput(contentTypeSelect.value);
       }
       setTimeout(() => {
@@ -50,50 +54,6 @@ function restoreState() {
     }
   );
 }
-
-// --- Theme Functions ---
-async function fetchThemes() {
-  const res = await fetch(`${API_BASE}/themes`);
-  allThemes = await res.json();
-  renderThemeOptions();
-}
-function renderThemeOptions() {
-  themeSelect.innerHTML = "";
-  allThemes.forEach((theme) => {
-    const opt = document.createElement("option");
-    opt.value = theme.name;
-    opt.textContent = theme.name;
-    themeSelect.appendChild(opt);
-  });
-  // Restore last used theme if available
-  chrome.storage.local.get(["clipkit_theme"], (data) => {
-    if (
-      data.clipkit_theme &&
-      allThemes.some((t) => t.name === data.clipkit_theme)
-    ) {
-      themeSelect.value = data.clipkit_theme;
-    }
-  });
-}
-addThemeBtn.addEventListener("click", async () => {
-  const name = prompt("New project/theme name?");
-  if (name && !allThemes.some((t) => t.name === name)) {
-    const res = await fetch(`${API_BASE}/themes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    if (res.ok) {
-      await fetchThemes();
-      // Wait for dropdown to update, then set value
-      setTimeout(() => {
-        themeSelect.value = name;
-        saveState();
-      }, 100);
-    }
-  }
-});
-themeSelect.addEventListener("change", saveState);
 
 // --- Tag Functions ---
 tagInput.addEventListener("input", async (e) => {
@@ -151,7 +111,7 @@ function renderContentInput(type) {
   previewDiv.style.display = "none";
   contentData = null;
   let input;
-  if (type === "text" || type === "other") {
+  if (type === "text") {
     input = document.createElement("textarea");
     input.id = "contentInput";
     input.placeholder = "Paste or type your content here...";
@@ -160,53 +120,28 @@ function renderContentInput(type) {
     contentInputWrapper.appendChild(input);
     contentInputWrapper.style.display = "block";
     input.addEventListener("input", saveState);
-  } else if (type === "url") {
+  } else if (type === "link") {
     input = document.createElement("input");
     input.type = "url";
     input.id = "contentInput";
-    input.placeholder = "Paste or type the URL here...";
+    input.placeholder = "Paste or type the link here...";
     input.required = true;
-    input.ariaLabel = "Content URL";
+    input.ariaLabel = "Content Link";
     contentInputWrapper.appendChild(input);
     contentInputWrapper.style.display = "block";
     input.addEventListener("input", saveState);
   } else if (type === "image") {
     input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
+    input.type = "url";
     input.id = "contentInput";
+    input.placeholder = "Paste image URL here...";
     input.required = true;
-    input.ariaLabel = "Image";
+    input.ariaLabel = "Image URL";
     contentInputWrapper.appendChild(input);
     contentInputWrapper.style.display = "block";
-    input.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (ev) {
-          contentData = ev.target.result;
-          showPreview("image", contentData);
-          saveState();
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-    contentInputWrapper.addEventListener("paste", (e) => {
-      const items = e.clipboardData.items;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf("image") !== -1) {
-          const file = items[i].getAsFile();
-          const reader = new FileReader();
-          reader.onload = function (ev) {
-            contentData = ev.target.result;
-            showPreview("image", contentData);
-            saveState();
-          };
-          reader.readAsDataURL(file);
-          e.preventDefault();
-          break;
-        }
-      }
+    input.addEventListener("input", (e) => {
+      showPreview("image", e.target.value.trim());
+      saveState();
     });
   } else if (type === "video") {
     input = document.createElement("input");
@@ -218,10 +153,20 @@ function renderContentInput(type) {
     contentInputWrapper.appendChild(input);
     contentInputWrapper.style.display = "block";
     input.addEventListener("input", (e) => {
-      const url = e.target.value.trim();
-      showPreview("video-url", url);
+      showPreview("video-url", e.target.value.trim());
       saveState();
     });
+  } else if (type === "code") {
+    input = document.createElement("textarea");
+    input.id = "contentInput";
+    input.placeholder = "Paste or type your code here...";
+    input.required = true;
+    input.ariaLabel = "Code";
+    input.style.fontFamily = "monospace";
+    input.style.minHeight = "80px";
+    contentInputWrapper.appendChild(input);
+    contentInputWrapper.style.display = "block";
+    input.addEventListener("input", saveState);
   }
 }
 
@@ -275,9 +220,53 @@ function showPreview(type, data) {
   }
 }
 
+// --- Idea Management ---
+function loadIdeas() {
+  chrome.storage.local.get(["clipkit_ideas"], (data) => {
+    allIdeas = data.clipkit_ideas || [];
+    renderIdeaOptions();
+  });
+}
+function saveIdeas() {
+  chrome.storage.local.set({ clipkit_ideas: allIdeas });
+}
+function renderIdeaOptions() {
+  ideaSelect.innerHTML = "";
+  allIdeas.forEach((idea, idx) => {
+    const opt = document.createElement("option");
+    opt.value = idea.name;
+    opt.textContent = idea.name;
+    ideaSelect.appendChild(opt);
+  });
+  if (allIdeas.length > 0) {
+    ideaSelect.value = allIdeas[0].name;
+    updateIdeaCategory();
+  }
+}
+function updateIdeaCategory() {
+  const selected = allIdeas.find((i) => i.name === ideaSelect.value);
+  if (selected) {
+    ideaCategoryInput.value = selected.category || "";
+  } else {
+    ideaCategoryInput.value = "";
+  }
+}
+addIdeaBtn.addEventListener("click", () => {
+  const name = prompt("New idea name?");
+  if (name && !allIdeas.some((i) => i.name === name)) {
+    const category = prompt("Category for this idea?") || "";
+    allIdeas.unshift({ name, category });
+    saveIdeas();
+    renderIdeaOptions();
+    ideaSelect.value = name;
+    updateIdeaCategory();
+  }
+});
+ideaSelect.addEventListener("change", updateIdeaCategory);
+
 // --- Initial Render ---
 window.addEventListener("DOMContentLoaded", async () => {
-  await fetchThemes();
+  loadIdeas();
   renderTagList();
   renderContentInput(contentTypeSelect.value);
   contentInputWrapper.style.display = "block";
@@ -287,7 +276,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     saveState();
   });
   restoreState();
-  fetchRecentItems();
+  // fetchRecentItems(); // Uncomment if you want to show recent items
 });
 
 // --- Form Submission ---
@@ -295,30 +284,28 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   saveBtn.disabled = true;
   loadingDiv.style.display = "block";
-  const theme = themeSelect.value;
+  const ideaName = ideaSelect.value;
+  const ideaCategory = ideaCategoryInput.value.trim();
+  const status = clipStatusSelect.value;
   const tags = selectedTags;
   const contentType = contentTypeSelect.value;
   let contentValue = null;
-  if (contentType === "image" || contentType === "video") {
-    contentValue = contentData;
-    if (!contentValue) {
-      alert("Please upload or paste a " + contentType + ".");
-      saveBtn.disabled = false;
-      loadingDiv.style.display = "none";
-      return;
-    }
-  } else {
-    const input = document.getElementById("contentInput");
-    contentValue = input.value.trim();
-    if (!contentValue) {
-      alert("Please provide the content.");
-      saveBtn.disabled = false;
-      loadingDiv.style.display = "none";
-      return;
-    }
+  const input = document.getElementById("contentInput");
+  contentValue = input.value.trim();
+  if (!contentValue) {
+    alert("Please provide the content.");
+    saveBtn.disabled = false;
+    loadingDiv.style.display = "none";
+    return;
   }
-  if (!theme) {
-    alert("Please select a project/theme.");
+  if (!ideaName) {
+    alert("Please enter an idea name.");
+    saveBtn.disabled = false;
+    loadingDiv.style.display = "none";
+    return;
+  }
+  if (!ideaCategory) {
+    alert("Please enter an idea category.");
     saveBtn.disabled = false;
     loadingDiv.style.display = "none";
     return;
@@ -337,11 +324,17 @@ form.addEventListener("submit", async (e) => {
       token = tokenObj.clipkit_jwt || null;
     } catch {}
     const payload = {
-      theme,
-      tags,
-      content_type: contentType,
-      content: contentValue,
-      url,
+      idea: {
+        name: ideaName,
+        category: ideaCategory,
+      },
+      clip: {
+        type: contentType,
+        value: contentValue,
+        status,
+        url,
+      },
+      tags: tags.map((t) => ({ name: t })),
     };
     const headers = { "Content-Type": "application/json" };
     if (token) headers["Authorization"] = `Bearer ${token}`;
