@@ -1,5 +1,4 @@
 // --- DOM Elements ---
-// Removed themeSelect and addThemeBtn as they are no longer in the UI
 const tagInput = document.getElementById("tagInput");
 const tagList = document.getElementById("tagList");
 const saveBtn = document.getElementById("saveBtn");
@@ -11,14 +10,12 @@ const previewDiv = document.getElementById("preview");
 const recentItemsDiv = document.getElementById("recentItems");
 const recentItemsList = document.getElementById("recentItemsList");
 const ideaNameInput = document.getElementById("ideaName");
-const ideaCategoryInput = document.getElementById("ideaCategory");
 const clipStatusSelect = document.getElementById("clipStatus");
 const ideaSelect = document.getElementById("ideaSelect");
 const addIdeaBtn = document.getElementById("addIdeaBtn");
 
 let contentData = null;
 let selectedTags = [];
-let allTags = [];
 let allIdeas = [];
 
 const API_BASE = "http://localhost:8000";
@@ -56,35 +53,20 @@ function restoreState() {
 }
 
 // --- Tag Functions ---
-tagInput.addEventListener("input", async (e) => {
-  const q = e.target.value.trim();
-  if (!q) return;
-  const res = await fetch(`${API_BASE}/tags?q=${encodeURIComponent(q)}`);
-  allTags = await res.json();
-  // Autocomplete (simple): show first match
-  if (allTags.length && !selectedTags.includes(allTags[0].name)) {
-    tagInput.value = allTags[0].name;
-  }
-});
-tagInput.addEventListener("keydown", async (e) => {
+tagInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && tagInput.value.trim()) {
     e.preventDefault();
     const tag = tagInput.value.trim();
     if (!selectedTags.includes(tag)) {
-      // Add to backend if new
-      if (!allTags.some((t) => t.name === tag)) {
-        await fetch(`${API_BASE}/tags`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: tag }),
-        });
-      }
       selectedTags.push(tag);
       renderTagList();
       saveState();
     }
     tagInput.value = "";
   }
+});
+tagInput.addEventListener("input", (e) => {
+  // No autocomplete logic needed
 });
 function renderTagList() {
   tagList.innerHTML = "";
@@ -272,6 +254,13 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   saveBtn.disabled = true;
   loadingDiv.style.display = "block";
+  // --- Ensure any tag in the input is included ---
+  const pendingTag = tagInput.value.trim();
+  if (pendingTag && !selectedTags.includes(pendingTag)) {
+    selectedTags.push(pendingTag);
+    renderTagList();
+    tagInput.value = "";
+  }
   const ideaName = ideaSelect.value;
   const tags = selectedTags;
   const contentType = contentTypeSelect.value;
@@ -307,14 +296,14 @@ form.addEventListener("submit", async (e) => {
     // Data model: user, ideas, clips, tags, status, type, value, created_at
     const payload = {
       user: {
-        // Optionally fill with user info if available
-        // id: "u-123", name: "Rajon Dey", email: "rajon@example.com"
+        id: "u-123",
+        name: "Rajon Dey",
+        email: "rajon@example.com",
       },
       ideas: [
         {
           id: `idea-${ideaName.toLowerCase().replace(/\s+/g, "-")}`,
           name: ideaName,
-          // category: null, // removed as per latest
           clips: [
             {
               id: `clip-${Date.now()}`,
@@ -353,7 +342,7 @@ form.addEventListener("submit", async (e) => {
       alert(msg);
     }
   } catch (err) {
-    alert("Failed to save. " + (err?.message || ""));
+    alert("Error: " + err.message);
   } finally {
     saveBtn.disabled = false;
     loadingDiv.style.display = "none";
