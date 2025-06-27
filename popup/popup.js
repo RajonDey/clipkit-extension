@@ -273,9 +273,9 @@ form.addEventListener("submit", async (e) => {
   saveBtn.disabled = true;
   loadingDiv.style.display = "block";
   const ideaName = ideaSelect.value;
-  const status = clipStatusSelect.value;
   const tags = selectedTags;
   const contentType = contentTypeSelect.value;
+  const status = clipStatusSelect.value;
   let contentValue = null;
   const input = document.getElementById("contentInput");
   contentValue = input.value.trim();
@@ -286,7 +286,7 @@ form.addEventListener("submit", async (e) => {
     return;
   }
   if (!ideaName) {
-    alert("Please enter an idea name.");
+    alert("Please select or add an idea.");
     saveBtn.disabled = false;
     loadingDiv.style.display = "none";
     return;
@@ -304,17 +304,29 @@ form.addEventListener("submit", async (e) => {
       );
       token = tokenObj.clipkit_jwt || null;
     } catch {}
+    // Data model: user, ideas, clips, tags, status, type, value, created_at
     const payload = {
-      idea: {
-        name: ideaName,
+      user: {
+        // Optionally fill with user info if available
+        // id: "u-123", name: "Rajon Dey", email: "rajon@example.com"
       },
-      clip: {
-        type: contentType,
-        value: contentValue,
-        status,
-        url,
-      },
-      tags: tags.map((t) => ({ name: t })),
+      ideas: [
+        {
+          id: `idea-${ideaName.toLowerCase().replace(/\s+/g, "-")}`,
+          name: ideaName,
+          // category: null, // removed as per latest
+          clips: [
+            {
+              id: `clip-${Date.now()}`,
+              type: contentType,
+              value: contentValue,
+              status: status,
+              created_at: new Date().toISOString(),
+              tags: tags.map((t, i) => ({ id: `tag-${i + 1}`, name: t })),
+            },
+          ],
+        },
+      ],
     };
     const headers = { "Content-Type": "application/json" };
     if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -324,14 +336,24 @@ form.addEventListener("submit", async (e) => {
       body: JSON.stringify(payload),
     });
     if (res.ok) {
-      await fetchRecentItems();
+      // Optionally clear form fields after save
+      if (input) input.value = "";
+      selectedTags = [];
+      renderTagList();
+      // Optionally reset status
+      // clipStatusSelect.value = "raw";
       saveState();
       alert("Saved to Clipkit!");
     } else {
-      alert("Failed to save.");
+      let msg = "Failed to save.";
+      try {
+        const err = await res.json();
+        if (err && err.detail) msg = err.detail;
+      } catch {}
+      alert(msg);
     }
   } catch (err) {
-    alert("Failed to save.");
+    alert("Failed to save. " + (err?.message || ""));
   } finally {
     saveBtn.disabled = false;
     loadingDiv.style.display = "none";
