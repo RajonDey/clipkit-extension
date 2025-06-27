@@ -6,21 +6,20 @@ body {
   min-width: 340px;
   min-height: 360px;
   color: #232946;
+  font-size: 0.97rem;
 }
 
 .container {
   background: #fff;
-  border-radius: 14px;
   box-shadow: 0 4px 18px 0 rgba(60, 72, 88, 0.09),
     0 1.5px 4px 0 rgba(60, 72, 88, 0.06);
-  margin: 20px auto;
   padding: 20px 16px 16px 16px;
   max-width: 370px;
 }
 
 h1 {
-  font-size: 1.18rem;
-  margin-bottom: 16px;
+  font-size: 1.08rem;
+  margin-bottom: 14px;
   color: #2d2d2d;
   letter-spacing: 0.2px;
   font-weight: 700;
@@ -28,9 +27,9 @@ h1 {
 }
 
 label {
-  font-size: 0.98rem;
+  font-size: 0.93rem;
   color: #444;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   display: block;
   font-weight: 500;
 }
@@ -40,14 +39,21 @@ textarea,
 select {
   width: 100%;
   box-sizing: border-box;
-  margin-bottom: 14px;
-  padding: 9px 11px;
+  margin-bottom: 11px;
+  padding: 7px 10px;
   border: 1.2px solid #e0e0e0;
   border-radius: 6px;
-  font-size: 0.98rem;
+  font-size: 0.93rem;
   background: #fafbfc;
   transition: border 0.2s, box-shadow 0.2s;
   outline: none;
+}
+select,
+textarea,
+input::placeholder {
+  color: gray;
+  font-style: italic;
+  font-size: 12px;
 }
 
 input:focus,
@@ -58,7 +64,7 @@ select:focus {
 }
 
 textarea {
-  min-height: 60px;
+  min-height: 54px;
   resize: vertical;
 }
 
@@ -68,12 +74,12 @@ textarea {
   color: #fff;
   border: none;
   border-radius: 6px;
-  padding: 10px 0;
-  font-size: 1rem;
+  padding: 8px 0;
+  font-size: 0.97rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
-  margin-top: 8px;
+  margin-top: 6px;
   box-shadow: 0 2px 8px 0 rgba(60, 72, 88, 0.08);
 }
 
@@ -86,30 +92,29 @@ textarea {
   display: none;
   text-align: center;
   color: #6d9886;
-  margin-bottom: 10px;
-  font-size: 1rem;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
   font-weight: 500;
 }
 
 .flex-row {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  gap: 7px;
 }
 
 .tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
+  gap: 5px;
+  margin-bottom: 8px;
 }
 
 .tag {
   background: #e9ecef;
   color: #444;
   border-radius: 4px;
-  padding: 3px 10px;
-  font-size: 0.95rem;
+  padding: 2px 8px;
+  font-size: 0.91rem;
   display: flex;
   align-items: center;
   font-weight: 400;
@@ -117,27 +122,27 @@ textarea {
 }
 
 .tag-remove {
-  margin-left: 6px;
+  margin-left: 5px;
   cursor: pointer;
   color: #6d9886;
   font-weight: bold;
-  font-size: 1.1em;
+  font-size: 1em;
 }
 
 #recentItems {
-  margin-top: 18px;
+  margin-top: 14px;
   background: #fafbfc;
   border: 1.2px solid #e0e0e0;
   border-radius: 7px;
-  padding: 10px 8px 8px 8px;
-  max-height: 120px;
+  padding: 7px 6px 6px 6px;
+  max-height: 100px;
   overflow-y: auto;
   box-shadow: 0 1px 4px 0 rgba(60, 72, 88, 0.04);
 }
 
 #recentItems h2 {
-  font-size: 1rem;
-  margin: 0 0 8px 0;
+  font-size: 0.97rem;
+  margin: 0 0 6px 0;
   color: #444;
   font-weight: 600;
 }
@@ -149,24 +154,25 @@ textarea {
 }
 
 #recentItems li {
-  font-size: 0.97rem;
-  margin-bottom: 6px;
+  font-size: 0.93rem;
+  margin-bottom: 4px;
   color: #444;
   font-weight: 400;
 }
 
 .add-btn {
-  background: linear-gradient(90deg, #6d9886 60%, #b5cda3 100%);
+  background: gainsboro;
   color: #fff;
   border: none;
   border-radius: 4px;
-  padding: 10px 12px;
-  font-size: 1rem;
+  padding: 2px 10px;
+  font-size: 0.97rem;
   cursor: pointer;
-  margin-left: 4px;
+  margin-left: 3px;
   font-weight: 600;
   box-shadow: 0 1px 4px 0 rgba(60, 72, 88, 0.08);
   transition: background 0.2s, box-shadow 0.2s;
+  height: 34px;
 }
 
 .add-btn:hover {
@@ -181,7 +187,7 @@ textarea {
 }
 
 #preview {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   text-align: center;
 }
 

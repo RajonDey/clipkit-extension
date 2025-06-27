@@ -14,7 +14,12 @@
       <h1>Save to Clipkit</h1>
       <form id="clipForm" autocomplete="off">
         <label for="contentType">Content Type</label>
-        <select id="contentType" aria-label="Content Type" required>
+        <select
+          id="contentType"
+          aria-label="Content Type"
+          required
+          style="font-size: 0.93rem"
+        >
           <option value="text">Text</option>
           <option value="link">Link</option>
           <option value="image">Image</option>
@@ -26,40 +31,46 @@
 
         <label for="ideaSelect">Idea</label>
         <div class="flex-row">
-          <select id="ideaSelect" aria-label="Idea" required></select>
+          <select
+            id="ideaSelect"
+            aria-label="Idea"
+            required
+            style="font-size: 0.93rem"
+          ></select>
           <button
             type="button"
             id="addIdeaBtn"
             class="add-btn"
             title="Add new idea"
+            style="font-size: 1.1rem"
           >
             +
           </button>
         </div>
-        <label for="ideaCategory">Idea Category</label>
-        <input
-          type="text"
-          id="ideaCategory"
-          placeholder="e.g. Tech, Marketing"
-          required
-        />
         <label for="tagInput">Tags</label>
         <input
           type="text"
           id="tagInput"
-          placeholder="Add tags..."
+          placeholder="Add creative tags, e.g. #inspiration, #quicktip, #mustread"
           autocomplete="off"
+          style="font-size: 0.93rem"
         />
         <div class="tag-list" id="tagList"></div>
         <label for="clipStatus">Status</label>
-        <select id="clipStatus" aria-label="Clip Status" required>
+        <select
+          id="clipStatus"
+          aria-label="Clip Status"
+          required
+          style="font-size: 0.93rem"
+        >
           <option value="raw">Raw</option>
           <option value="reviewed">Reviewed</option>
           <option value="used">Used</option>
         </select>
-
         <div id="loading">Saving...</div>
-        <button id="saveBtn" type="submit">Save</button>
+        <button id="saveBtn" type="submit" style="font-size: 0.97rem">
+          Save
+        </button>
       </form>
       <div id="recentItems" style="display: none">
         <h2>Recently Saved</h2>

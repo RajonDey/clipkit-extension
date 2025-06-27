@@ -240,29 +240,17 @@ function renderIdeaOptions() {
   });
   if (allIdeas.length > 0) {
     ideaSelect.value = allIdeas[0].name;
-    updateIdeaCategory();
-  }
-}
-function updateIdeaCategory() {
-  const selected = allIdeas.find((i) => i.name === ideaSelect.value);
-  if (selected) {
-    ideaCategoryInput.value = selected.category || "";
-  } else {
-    ideaCategoryInput.value = "";
   }
 }
 addIdeaBtn.addEventListener("click", () => {
   const name = prompt("New idea name?");
   if (name && !allIdeas.some((i) => i.name === name)) {
-    const category = prompt("Category for this idea?") || "";
-    allIdeas.unshift({ name, category });
+    allIdeas.unshift({ name });
     saveIdeas();
     renderIdeaOptions();
     ideaSelect.value = name;
-    updateIdeaCategory();
   }
 });
-ideaSelect.addEventListener("change", updateIdeaCategory);
 
 // --- Initial Render ---
 window.addEventListener("DOMContentLoaded", async () => {
@@ -285,7 +273,6 @@ form.addEventListener("submit", async (e) => {
   saveBtn.disabled = true;
   loadingDiv.style.display = "block";
   const ideaName = ideaSelect.value;
-  const ideaCategory = ideaCategoryInput.value.trim();
   const status = clipStatusSelect.value;
   const tags = selectedTags;
   const contentType = contentTypeSelect.value;
@@ -300,12 +287,6 @@ form.addEventListener("submit", async (e) => {
   }
   if (!ideaName) {
     alert("Please enter an idea name.");
-    saveBtn.disabled = false;
-    loadingDiv.style.display = "none";
-    return;
-  }
-  if (!ideaCategory) {
-    alert("Please enter an idea category.");
     saveBtn.disabled = false;
     loadingDiv.style.display = "none";
     return;
@@ -326,7 +307,6 @@ form.addEventListener("submit", async (e) => {
     const payload = {
       idea: {
         name: ideaName,
-        category: ideaCategory,
       },
       clip: {
         type: contentType,
